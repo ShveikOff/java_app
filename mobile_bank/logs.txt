@@ -6,3 +6,14 @@
 2024-05-23 16:38:45 - Error during transaction: [SQLITE_ERROR] SQL error or missing database (table transactions has no column named sender_account)
 2024-05-23 18:25:44 - Error fetching transactions: Error parsing time stamp
 2024-05-23 18:31:16 - Error fetching transactions: Error parsing time stamp
+2024-05-29 21:11:38 - Invalid user ID format: 
+2024-05-29 21:11:47 - Authentication failed
+2024-05-29 21:12:38 - Invalid user ID format: 
+2024-05-29 21:12:46 - Authentication failed
+2024-05-29 21:15:56 - Invalid format: java.lang.NumberFormatException: empty String
+2024-05-29 21:16:23 - Account not found
+2024-05-29 21:16:23 - unknown phone number
+2024-05-29 21:22:26 - Account not found
+2024-05-29 21:27:39 - Account not found
+2024-05-29 21:27:39 - unknown phone number
+2024-05-29 21:27:56 - Invalid format: java.lang.NumberFormatException: empty String

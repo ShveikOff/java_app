@@ -1,4 +1,3 @@
-// Task 1 account number с типом int не может принять целиком текущий формат номеров счетов типа 4169 5853 5823 2345
 package com.example;
 import java.sql.*;
 import java.time.LocalDate;
@@ -13,7 +12,7 @@ import java.time.ZoneId;
 public class DatabaseManager {
     private static final String DATABASE_URL = "jdbc:sqlite:mobile_bank.db"; // Путь к базе данных SQLite
 
-    // Метод для инициализации базы даннхы и таблицы счетов при запуске приложения
+    // Метод для инициализации базы данных и таблицы счетов при запуске приложения
     public static void initializeDatabase() {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL)) { // Установка соединения с базой данных
             // SQL запрос для создания таблицы clients, если она не существует
@@ -33,6 +32,7 @@ public class DatabaseManager {
             try (Statement statement = connection.createStatement()) { // Создание объекта Statement для выполнения SQL запроса
                 statement.executeUpdate(createAccountsTableQuery); // Выполнение SQL запроса для создания таблицы
             }
+            // SQL запрос для создания таблицы transactions, если она не существует
             String createTransactionsTableQuery = "CREATE TABLE IF NOT EXISTS transactions (" +
                                                     "sender_account_number INT," +
                                                     "receiver_account_number INT," +
@@ -43,11 +43,10 @@ public class DatabaseManager {
             try (Statement statement = connection.createStatement()) { // Создание объекта Statement для выполнения SQL запроса
                 statement.executeUpdate(createTransactionsTableQuery); // Выполнение SQL запроса для создания таблицы
             }         
-        } catch (SQLException e) {// Обработка исключений, связанных с работой базой данных
+        } catch (SQLException e) { // Обработка исключений, связанных с работой базой данных
             System.err.println("Error intializing database " + e.getMessage()); // Вывод сообщения об ошибке
             ErrorLogger.logError("Error intializing database: " + e.getMessage());
         }
-        
     }
 
     // Метод для добавления нового клиента в базу данных
@@ -56,7 +55,7 @@ public class DatabaseManager {
         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO clients VALUES (?, ?, ?, ?)")) { // Подготовка SQL запроса с параметрами
             preparedStatement.setInt(1, clientID); // Установка значения первого параметра (номер клиента)
             preparedStatement.setString(2, clientName); // Установка значения второго параметра (имя клиента)
-            preparedStatement.setString(2, clientPincode); // Установка значения третьего параметра (пинкод)
+            preparedStatement.setString(3, clientPincode); // Установка значения третьего параметра (пинкод)
             preparedStatement.setString(4, clientPhone); // Установка значения четвертого параметра (номер телефона)
             preparedStatement.executeUpdate(); // Выполнение SQL запроса на добавление записи
         } catch (SQLException e) { // Обработка исключений, связанных с работой с базой данных
@@ -70,7 +69,7 @@ public class DatabaseManager {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных 
         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO accounts VALUES (?, ?, ?)")) { // Подготовка SQL запроса с параметрами
             preparedStatement.setInt(1, accountNumber); // Установка значения первого параметра (номер счета)
-            preparedStatement.setInt(2, clientID); // Устновка значения второго параметра (номер клиента)
+            preparedStatement.setInt(2, clientID); // Установка значения второго параметра (номер клиента)
             preparedStatement.setDouble(3, initialBalance); // Установка значения третьего параметра (начальный баланс)
             preparedStatement.executeUpdate(); // Выполнение SQL запроса на добавление записи
         } catch (SQLException e) { // Обработка исключений связанных с работой с базой данных
@@ -81,46 +80,30 @@ public class DatabaseManager {
 
     // Метод для получения баланса счета из базы данных
     public static double getBalance(int accountNumber) {
-        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT balance FROM accounts WHERE account_number = ?")) {
-            preparedStatement.setInt(1, accountNumber);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getDouble("balance");
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting balance: " + e.getMessage());
-            ErrorLogger.logError("Error getting balance: " + e.getMessage());
-        }
-        ErrorLogger.logError("Account not found: " + accountNumber);
-        return 0.0;
-    }
-    /*
-    public static double getBalance(int accountNumber) {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT balance FROM accounts WHERE account_number = ?")) { // Подготовка SQL запроса с парамтром
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT balance FROM accounts WHERE account_number = ?")) { // Подготовка SQL запроса с параметром
             preparedStatement.setInt(1, accountNumber); // Установка значения параметра (номер счета)
-            ResultSet resultSet = preparedStatement.executeQuery(); // Выполнение SQL запроса на получение результата
-            if (resultSet.next()) { // Проверка наличия результата
-                return resultSet.getDouble("balance"); // Возвращение баланса из результата запроса
+            try (ResultSet resultSet = preparedStatement.executeQuery()) { // Выполнение SQL запроса на получение результата
+                if (resultSet.next()) { // Проверка наличия результата
+                    return resultSet.getDouble("balance"); // Возвращение баланса из результата запроса
+                }
             }
         } catch (SQLException e) { // Обработка исключений, связанных с работой с базой данных
             System.err.println("Error getting balance: " + e.getMessage()); // Вывод сообщения об ошибке
             ErrorLogger.logError("Error getting balance: " + e.getMessage());
         }
-        ErrorLogger.logError("Account not found:");
+        ErrorLogger.logError("Account not found: " + accountNumber);
         return 0.0; // Возвращаем 0, если счет не найден или произошла ошибка
     }
-    */
 
+    // Метод для получения имени клиента из базы данных по его ID
     public static String getClientName(int client_id) {
-        try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой даннхы
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT client_name FROM clients WHERE client_id = ?")) { // Подготовка SQL запроса с параметрами
             preparedStatement.setInt(1, client_id); // Установка значения параметра (номер клиента)
             ResultSet resultSet = preparedStatement.executeQuery(); // Выполнение SQL запроса на получение результата
             if (resultSet.next()) { // Проверка наличия результата
-                return resultSet.getString("client_name"); // Возращение имени клиента из результата запроса
+                return resultSet.getString("client_name"); // Возвращение имени клиента из результата запроса
             }
         } catch (SQLException e) { // Обработка исключений, связанных с работой с базой данных
             System.err.println("Error getting client_name: " + e.getMessage()); // Вывод сообщения об ошибке
@@ -130,54 +113,41 @@ public class DatabaseManager {
         return "client_name not found"; // Возвращаем сообщение, если номер клиента не был найден или произошла ошибка
     }
 
+    // Метод для аутентификации клиента по его ID и пинкоду
     public static boolean authenticate(int clientID, String pincode) {
-        String pincodeFromDB = null;
+        String pincodeFromDB = null; // Переменная для хранения пинкода из базы данных
     
         // Попытка извлечения пинкода из базы данных для данного clientID
-        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
              PreparedStatement preparedStatement = connection.prepareStatement(
-                     "SELECT client_pincode FROM clients WHERE client_id = ?")) {
-            preparedStatement.setInt(1, clientID);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                pincodeFromDB = resultSet.getString("client_pincode");
+                     "SELECT client_pincode FROM clients WHERE client_id = ?")) { // Подготовка SQL запроса с параметром
+            preparedStatement.setInt(1, clientID); // Установка значения параметра (номер клиента)
+            ResultSet resultSet = preparedStatement.executeQuery(); // Выполнение SQL запроса на получение результата
+            if (resultSet.next()) { // Проверка наличия результата
+                pincodeFromDB = resultSet.getString("client_pincode"); // Сохранение пинкода из результата запроса
             }
-        } catch (SQLException e) {
-            System.err.println("Error fetching pincode: " + e.getMessage());
+        } catch (SQLException e) { // Обработка исключений, связанных с работой с базой данных
+            System.err.println("Error fetching pincode: " + e.getMessage()); // Вывод сообщения об ошибке
             ErrorLogger.logError("Error fetching pincode: " + e.getMessage());
             return false; // Возвращаем false в случае ошибки
         }
     
         // Сравниваем извлеченный пинкод с предоставленным
-        return pincode != null && pincode.equals(pincodeFromDB);
+        return pincode != null && pincode.equals(pincodeFromDB); // Возвращаем результат сравнения пинкодов
     }
-    
     // Метод для обновления баланса счета в базе данных
     private static void updateBalance(int accountNumber, double amountToAdd, Connection connection) throws SQLException {
         try (PreparedStatement preparedStatement = connection.prepareStatement("UPDATE accounts SET balance = balance + ? WHERE account_number = ?")) {
-            preparedStatement.setDouble(1, amountToAdd);
-            preparedStatement.setInt(2, accountNumber);
-            int affectedRows = preparedStatement.executeUpdate();
+            preparedStatement.setDouble(1, amountToAdd); // Установка значения параметра (сумма для добавления)
+            preparedStatement.setInt(2, accountNumber); // Установка значения параметра (номер счета)
+            int affectedRows = preparedStatement.executeUpdate(); // Выполнение SQL запроса на обновление баланса
             if (affectedRows == 0) {
-                throw new SQLException("Updating balance failed, no rows affected.");
+                throw new SQLException("Updating balance failed, no rows affected."); // Исключение, если обновление не затронуло ни одной строки
             }
         }
     }
 
-    /*
-    public static void updateBalance(int accountNumber, double amountToAdd) {
-        try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
-        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE accounts SET balance = balance + ? WHERE account_number = ?")) { // Подготовка SQL запроса с параметрами
-            preparedStatement.setDouble(1, amountToAdd); // Установка значения первого параметра (прибавляемой к текущему балансу суммы)
-            preparedStatement.setInt(2, accountNumber); // Установка значения второго параметра (номер счета)
-            preparedStatement.executeUpdate(); // Выполнение SQL запроса на обновление записи
-        } catch (SQLException e) { // Обработка исключений, связанных с базой данных
-            System.err.println("Error updating balance: " + e.getMessage()); // Вывод сообщения об ошибке
-            ErrorLogger.logError("Error updating balance: " + e.getMessage());
-        }
-    }
-    */
-
+    // Метод для получения номера счета по номеру телефона клиента
     public static int getAccountNumberByClientPhone(String clientPhone) {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
         PreparedStatement preparedStatement = connection.prepareStatement(
@@ -197,10 +167,11 @@ public class DatabaseManager {
         return 0; // Возвращаем 0, если счет не найден или произошла ошибка
     }
 
+    // Метод для получения номера счета по номеру клиента
     public static int getAccountNumberByClientId(int client_id) {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT account_number FROM accounts WHERE client_id = ?")) { // Подготовка SQL запроса с параметрами
-            preparedStatement.setInt(1, client_id); // Установка значения параметра (номер телефона клиента)
+            preparedStatement.setInt(1, client_id); // Установка значения параметра (номер клиента)
             ResultSet resultSet = preparedStatement.executeQuery(); // Выполнение SQL запроса на получение результата
             if (resultSet.next()) { // Проверка наличия результата
                 return resultSet.getInt("account_number"); // Возвращение номера счета из результата запроса
@@ -213,13 +184,14 @@ public class DatabaseManager {
         return 0; // Возвращаем 0, если счет не найден или произошла ошибка
     }
 
+    // Метод для обновления пинкода клиента
     public static void updateClientPincode(int clientID, String currentPincode, String newPincode) {
         String currentPincodeFromDB = null;
-    
+
         // Сначала проверим, соответствует ли текущий пинкод
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-             PreparedStatement preparedStatement = connection.prepareStatement(
-                     "SELECT client_pincode FROM clients WHERE client_id = ?")) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT client_pincode FROM clients WHERE client_id = ?")) {
             preparedStatement.setInt(1, clientID);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
@@ -230,12 +202,12 @@ public class DatabaseManager {
             ErrorLogger.logError("Error fetching current pincode: " + e.getMessage());
             return;
         }
-    
+
         // Если пинкод из базы данных соответствует предоставленному текущему пинкоду, обновим его
         if (currentPincode != null && currentPincode.equals(currentPincodeFromDB)) {
             try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-                 PreparedStatement preparedStatement = connection.prepareStatement(
-                         "UPDATE clients SET client_pincode = ? WHERE client_id = ?")) {
+                PreparedStatement preparedStatement = connection.prepareStatement(
+                        "UPDATE clients SET client_pincode = ? WHERE client_id = ?")) {
                 preparedStatement.setString(1, newPincode);
                 preparedStatement.setInt(2, clientID);
                 preparedStatement.executeUpdate();
@@ -249,8 +221,8 @@ public class DatabaseManager {
             ErrorLogger.logError("Current pincode does not match.");
         }
     }
-    
 
+    // Метод для получения client_id по account_number
     public static int get_client_id_by_account_number (int accountNumber) {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT client_id FROM accounts WHERE account_number = ?")) { // Подготовка SQL запроса с параметрами
@@ -265,26 +237,25 @@ public class DatabaseManager {
         }
         ErrorLogger.logError("Account not found");
         return 0; // Возвращаем 0, если счет не найден или произошла ошибка
-        
     }
 
-    // Метод для совершения транзакий account to account
+    // Метод для совершения транзакций между счетами
     public static void transAction (int sender_accountNumber, int receiver_accountNubmer, double transaction_amount) {
-        double sender_balance = getBalance(sender_accountNumber);
-        if (sender_balance < transaction_amount) {
+        double sender_balance = getBalance(sender_accountNumber); // Получение баланса отправителя
+        if (sender_balance < transaction_amount) { // Проверка, достаточно ли средств на счете
             System.out.println("not enough money on balance");
             ErrorLogger.logError("not enough money on balance");
             return;
         }
-        
-        int sender_client_id = get_client_id_by_account_number(sender_accountNumber);
-        int receiver_client_id = get_client_id_by_account_number(receiver_accountNubmer);
+
+        int sender_client_id = get_client_id_by_account_number(sender_accountNumber); // Получение client_id отправителя
+        int receiver_client_id = get_client_id_by_account_number(receiver_accountNubmer); // Получение client_id получателя
 
         try (Connection connection = DriverManager.getConnection(DATABASE_URL)) {
-            // Begin transaction
+            // Начало транзакции
             connection.setAutoCommit(false);
-    
-            // Insert transaction record
+
+            // Вставка записи о транзакции
             try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?)")) {
                 preparedStatement.setInt(1, sender_accountNumber);
                 preparedStatement.setInt(2, receiver_accountNubmer);
@@ -296,48 +267,50 @@ public class DatabaseManager {
                 preparedStatement.setTimestamp(6, timestamp);
                 preparedStatement.executeUpdate();
             }
-    
-            // Update sender balance
+
+            // Обновление баланса отправителя
             double sender_amountToAdd = transaction_amount * (-1);
             updateBalance(sender_accountNumber, sender_amountToAdd, connection);
-    
-            // Update receiver balance
+
+            // Обновление баланса получателя
             double receiver_amountToAdd = transaction_amount;
             updateBalance(receiver_accountNubmer, receiver_amountToAdd, connection);
-    
-            // Commit transaction
+
+            // Подтверждение транзакции
             connection.commit();
         } catch (SQLException e) {
             System.err.println("Error during transaction: " + e.getMessage());
             ErrorLogger.logError("Error during transaction: " + e.getMessage());
         }
     }
-    
+
+    // Метод для совершения транзакций по номеру телефона клиента
     public static void phonetransAction (int sender_account_number, String receiver_client_phone, double transaction_amount) {
-        int receiver_account_number = getAccountNumberByClientPhone(receiver_client_phone);
-        if (receiver_account_number == 0) {
+        int receiver_account_number = getAccountNumberByClientPhone(receiver_client_phone); // Получение номера счета получателя по номеру телефона
+        if (receiver_account_number == 0) { // Проверка, найден ли номер счета
             System.out.println("unknown phone number");
             ErrorLogger.logError("unknown phone number");
             return;
         }
-        transAction(sender_account_number, receiver_account_number, transaction_amount);
+        transAction(sender_account_number, receiver_account_number, transaction_amount); // Вызов метода транзакции
     }
 
+    // Метод для получения списка транзакций клиента
     public static ObservableList<Transaction> getTransactions(int client_id) {
         ObservableList<Transaction> transactionsList = FXCollections.observableArrayList();
-    
+
         String query = "SELECT sender_account_number, receiver_account_number, sender_client_id, " +
-                       "receiver_client_id, amount, transaction_time FROM transactions " +
-                       "WHERE sender_client_id = ? OR receiver_client_id = ?";
+                    "receiver_client_id, amount, transaction_time FROM transactions " +
+                    "WHERE sender_client_id = ? OR receiver_client_id = ?";
         
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-             PreparedStatement statement = connection.prepareStatement(query)) {
+            PreparedStatement statement = connection.prepareStatement(query)) {
             
             statement.setInt(1, client_id);
             statement.setInt(2, client_id);
             
             ResultSet resultSet = statement.executeQuery();
-    
+
             while (resultSet.next()) {
                 String userCardPrefix = "41695853"; // Префикс для userCard
                 String userCardSuffix = String.valueOf(resultSet.getInt("sender_account_number"));
@@ -375,63 +348,7 @@ public class DatabaseManager {
             System.err.println("Error fetching transactions: " + e.getMessage());
             ErrorLogger.logError("Error fetching transactions: " + e.getMessage());
         }
-    
+
         return transactionsList;
     }
 }
-
-/*
-    public static ObservableList<Transaction> getTransactions(int client_id) {
-        ObservableList<Transaction> transactionsList = FXCollections.observableArrayList();
-    
-        String query = "SELECT sender_account_number, receiver_account_number, sender_client_id, " +
-                       "receiver_client_id, amount, transaction_time FROM transactions " +
-                       "WHERE sender_client_id = ? OR receiver_client_id = ?";
-        
-        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            
-            statement.setInt(1, client_id);
-            statement.setInt(2, client_id);
-            
-            ResultSet resultSet = statement.executeQuery();
-    
-            while (resultSet.next()) {
-                String userCard;
-                String userName;
-                double amount = resultSet.getDouble("amount");
-                
-                int sender_client_id = resultSet.getInt("sender_client_id");
-                int receiver_client_id = resultSet.getInt("receiver_client_id");
-                
-                // Определение userCard и userName в зависимости от sender_client_id и receiver_client_id
-                if (client_id == sender_client_id) {
-                    userCard = String.valueOf(resultSet.getInt("receiver_account_number"));
-                    userName = getClientName(receiver_client_id);
-                    amount = -amount; // устанавливаем отрицательное значение для отправителя
-                } else {
-                    userCard = String.valueOf(resultSet.getInt("sender_account_number"));
-                    userName = getClientName(sender_client_id);
-                }
-                
-                Timestamp timestamp = resultSet.getTimestamp("transaction_time");
-                
-                if (timestamp != null) {
-                    LocalDateTime dateTime = timestamp.toLocalDateTime();
-                    LocalDate date = dateTime.toLocalDate();
-                    Transaction transaction = new Transaction(userCard, userName, amount, date);
-                    transactionsList.add(transaction);
-                } else {
-                    System.err.println("Error: transaction_time is null for one of the transactions");
-                    ErrorLogger.logError("Error: transaction_time is null for one of the transactions");
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error fetching transactions: " + e.getMessage());
-            ErrorLogger.logError("Error fetching transactions: " + e.getMessage());
-        }
-    
-        return transactionsList;
-    }
-*/   
-

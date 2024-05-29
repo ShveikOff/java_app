@@ -16,7 +16,7 @@
             <AnchorPane layoutX="2.0" prefHeight="439.0" prefWidth="315.0" stylesheets="@LoginDesign.css" AnchorPane.rightAnchor="0.0" />
             <AnchorPane layoutX="317.0" prefHeight="439.0" prefWidth="309.0" styleClass="right-form" stylesheets="@LoginDesign.css" AnchorPane.rightAnchor="0.0">
                <children>
-                  <Label layoutX="69.0" layoutY="103.0" text="Welcome Back Admin!">
+                  <Label layoutX="69.0" layoutY="103.0" text="Welcome Back User!">
                      <font>
                         <Font name="Tahoma Bold" size="18.0" />
                      </font>
@@ -24,6 +24,11 @@
                   <TextField fx:id="username" layoutX="48.0" layoutY="179.0" onAction="#loginAdmin" prefHeight="30.0" prefWidth="220.0" promptText="Username" styleClass="textField" stylesheets="@LoginDesign.css" />
                   <PasswordField fx:id="password" layoutX="48.0" layoutY="220.0" onAction="#loginAdmin" prefHeight="30.0" prefWidth="220.0" promptText="Password" styleClass="textField" stylesheets="@LoginDesign.css" />
                   <Button fx:id="loginBtn" layoutX="48.0" layoutY="268.0" mnemonicParsing="false" onAction="#loginAdmin" prefHeight="38.0" prefWidth="220.0" styleClass="login-btn" stylesheets="@LoginDesign.css" text="Login" />
+                  <Label fx:id="login_error" layoutX="48.0" layoutY="144.0" prefHeight="18.0" prefWidth="220.0" textFill="RED">
+                     <font>
+                        <Font name="Tahoma Bold" size="14.0" />
+                     </font>
+                  </Label>
                </children>
             </AnchorPane>
             <SplitPane prefHeight="439.0" prefWidth="315.0" styleClass="left-form" stylesheets="@LoginDesign.css">
