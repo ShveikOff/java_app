@@ -311,27 +311,6 @@ public class DatabaseManager {
             System.err.println("Error during transaction: " + e.getMessage());
             ErrorLogger.logError("Error during transaction: " + e.getMessage());
         }
-        
-        /*
-        try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?)")) { // Подготовка SQL запроса с параметрами
-            preparedStatement.setInt(1, sender_accountNumber); // Установка значения первого параметра (номер счета отправителя)
-            preparedStatement.setInt(2, receiver_accountNubmer); // Установка значения второго параметра (номер счета получателя)
-            preparedStatement.setInt(3, sender_client_id); // Установка значения третьего параметра (номер клиента отправителя)
-            preparedStatement.setInt(4, receiver_client_id); // Установка значения четвертого параметра (номер клиента получателя)
-            preparedStatement.setDouble(5, transaction_amount); // Установка значения пятого параметра (сумма транзакции)
-            LocalDateTime curDateTime = LocalDateTime.now();
-            preparedStatement.setObject(6, curDateTime); // Установка значения шестого параметра (время транзакции)
-            preparedStatement.executeUpdate(); // Выполнение SQL запроса на обновление записи
-        } catch (SQLException e) { // Обработка исключений, связанных с базой данных
-            System.err.println("Error during transaction: " + e.getMessage()); // Вывод сообщения об ошибке
-            ErrorLogger.logError("Error during transaction: " + e.getMessage()); 
-        }
-        double sender_amountToAdd = transaction_amount * (-1);
-        double receiver_amountToAdd = transaction_amount;
-        updateBalance(sender_accountNumber, sender_amountToAdd);
-        updateBalance(receiver_accountNubmer, receiver_amountToAdd);
-        */
     }
     
     public static void phonetransAction (int sender_account_number, String receiver_client_phone, double transaction_amount) {
@@ -344,22 +323,44 @@ public class DatabaseManager {
         transAction(sender_account_number, receiver_account_number, transaction_amount);
     }
 
-    public static ObservableList<Transaction> getTransactions() {
+    public static ObservableList<Transaction> getTransactions(int client_id) {
         ObservableList<Transaction> transactionsList = FXCollections.observableArrayList();
     
         String query = "SELECT sender_account_number, receiver_account_number, sender_client_id, " +
-                       "receiver_client_id, amount, transaction_time FROM transactions";
-    
+                       "receiver_client_id, amount, transaction_time FROM transactions " +
+                       "WHERE sender_client_id = ? OR receiver_client_id = ?";
+        
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            
+            statement.setInt(1, client_id);
+            statement.setInt(2, client_id);
+            
+            ResultSet resultSet = statement.executeQuery();
     
             while (resultSet.next()) {
-                String userCard = String.valueOf(resultSet.getInt("sender_account_number"));
-                String userName = String.valueOf(resultSet.getInt("sender_client_id"));
+                String userCardPrefix = "41695853"; // Префикс для userCard
+                String userCardSuffix = String.valueOf(resultSet.getInt("sender_account_number"));
+                if (client_id == resultSet.getInt("sender_client_id")) {
+                    userCardSuffix = String.valueOf(resultSet.getInt("receiver_account_number"));
+                }
+                String userCard = userCardPrefix + userCardSuffix; // Объединяем префикс и суффикс userCard
+                String userName;
                 double amount = resultSet.getDouble("amount");
+                
+                int sender_client_id = resultSet.getInt("sender_client_id");
+                int receiver_client_id = resultSet.getInt("receiver_client_id");
+                
+                // Определение userName в зависимости от sender_client_id и receiver_client_id
+                if (client_id == sender_client_id) {
+                    userName = getClientName(receiver_client_id);
+                    amount = -amount; // устанавливаем отрицательное значение для отправителя
+                } else {
+                    userName = getClientName(sender_client_id);
+                }
+                
                 Timestamp timestamp = resultSet.getTimestamp("transaction_time");
-    
+                
                 if (timestamp != null) {
                     LocalDateTime dateTime = timestamp.toLocalDateTime();
                     LocalDate date = dateTime.toLocalDate();
@@ -370,7 +371,6 @@ public class DatabaseManager {
                     ErrorLogger.logError("Error: transaction_time is null for one of the transactions");
                 }
             }
-    
         } catch (SQLException e) {
             System.err.println("Error fetching transactions: " + e.getMessage());
             ErrorLogger.logError("Error fetching transactions: " + e.getMessage());
@@ -378,126 +378,60 @@ public class DatabaseManager {
     
         return transactionsList;
     }
-    
-    /*
-    public static ObservableList<Transaction> getTransactions() {
+}
+
+/*
+    public static ObservableList<Transaction> getTransactions(int client_id) {
         ObservableList<Transaction> transactionsList = FXCollections.observableArrayList();
-
+    
         String query = "SELECT sender_account_number, receiver_account_number, sender_client_id, " +
-                       "receiver_client_id, amount, transaction_time FROM transactions";
-
+                       "receiver_client_id, amount, transaction_time FROM transactions " +
+                       "WHERE sender_client_id = ? OR receiver_client_id = ?";
+        
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)) {
-
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            
+            statement.setInt(1, client_id);
+            statement.setInt(2, client_id);
+            
+            ResultSet resultSet = statement.executeQuery();
+    
             while (resultSet.next()) {
-                String userCard = String.valueOf(resultSet.getInt("sender_account_number"));
-                String userName = String.valueOf(resultSet.getInt("sender_client_id"));
+                String userCard;
+                String userName;
                 double amount = resultSet.getDouble("amount");
-                LocalDate date = resultSet.getTimestamp("transaction_time").toLocalDateTime().toLocalDate();
-
-                Transaction transaction = new Transaction(userCard, userName, amount, date);
-                transactionsList.add(transaction);
+                
+                int sender_client_id = resultSet.getInt("sender_client_id");
+                int receiver_client_id = resultSet.getInt("receiver_client_id");
+                
+                // Определение userCard и userName в зависимости от sender_client_id и receiver_client_id
+                if (client_id == sender_client_id) {
+                    userCard = String.valueOf(resultSet.getInt("receiver_account_number"));
+                    userName = getClientName(receiver_client_id);
+                    amount = -amount; // устанавливаем отрицательное значение для отправителя
+                } else {
+                    userCard = String.valueOf(resultSet.getInt("sender_account_number"));
+                    userName = getClientName(sender_client_id);
+                }
+                
+                Timestamp timestamp = resultSet.getTimestamp("transaction_time");
+                
+                if (timestamp != null) {
+                    LocalDateTime dateTime = timestamp.toLocalDateTime();
+                    LocalDate date = dateTime.toLocalDate();
+                    Transaction transaction = new Transaction(userCard, userName, amount, date);
+                    transactionsList.add(transaction);
+                } else {
+                    System.err.println("Error: transaction_time is null for one of the transactions");
+                    ErrorLogger.logError("Error: transaction_time is null for one of the transactions");
+                }
             }
-
         } catch (SQLException e) {
             System.err.println("Error fetching transactions: " + e.getMessage());
             ErrorLogger.logError("Error fetching transactions: " + e.getMessage());
         }
-
+    
         return transactionsList;
     }
-    */
-}
+*/   
 
-/*
-public static List<Transaction> getTransactionHistory(int clientID) {
-    List<Transaction> transactions = new ArrayList<>();
-
-    // SQL запрос для получения истории транзакций по client_id
-    String query = "SELECT * FROM transactions WHERE sender_client_id = ? OR receiver_client_id = ?";
-
-    try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-        PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-        preparedStatement.setInt(1, clientID);
-        preparedStatement.setInt(2, clientID);
-        ResultSet resultSet = preparedStatement.executeQuery();
-
-        // Обработка результата запроса и добавление транзакций в список
-        while (resultSet.next()) {
-            int senderAccountNumber = resultSet.getInt("sender_account_number");
-            int receiverAccountNumber = resultSet.getInt("receiver_account_number");
-            int senderClientID = resultSet.getInt("sender_client_id");
-            int receiverClientID = resultSet.getInt("receiver_client_id");
-            double amount = resultSet.getDouble("amount");
-            LocalDateTime transactionTime = resultSet.getTimestamp("transaction_time").toLocalDateTime();
-
-            Transaction transaction = new Transaction(senderAccountNumber, receiverAccountNumber, senderClientID, receiverClientID, amount, transactionTime);
-            transactions.add(transaction);
-        }
-    } catch (SQLException e) {
-        System.err.println("Error fetching transaction history: " + e.getMessage());
-        ErrorLogger.logError("Error fetching trasaction history: " + e.getMessage()); 
-    }
-
-    return transactions;
-}
-*/
-
-/*
-// Класс Transaction для хранения данных о транзакциях
-public static class Transaction {
-    private int senderAccountNumber;
-    private int receiverAccountNumber;
-    private int senderClientID;
-    private int receiverClientID;
-    private double amount;
-    private LocalDateTime transactionTime;
-
-    public Transaction(int senderAccountNumber, int receiverAccountNumber, int senderClientID, int receiverClientID, double amount, LocalDateTime transactionTime) {
-        this.senderAccountNumber = senderAccountNumber;
-        this.receiverAccountNumber = receiverAccountNumber;
-        this.senderClientID = senderClientID;
-        this.receiverClientID = receiverClientID;
-        this.amount = amount;
-        this.transactionTime = transactionTime;
-    }
-
-    // Геттеры для полей
-    public int getSenderAccountNumber() {
-        return senderAccountNumber;
-    }
-
-    public int getReceiverAccountNumber() {
-        return receiverAccountNumber;
-    }
-
-    public int getSenderClientID() {
-        return senderClientID;
-    }
-
-    public int getReceiverClientID() {
-        return receiverClientID;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public LocalDateTime getTransactionTime() {
-        return transactionTime;
-    }
-
-    @Override
-    public String toString() {
-        return "Transaction{" +
-                "senderAccountNumber=" + senderAccountNumber +
-                ", receiverAccountNumber=" + receiverAccountNumber +
-                ", senderClientID=" + senderClientID +
-                ", receiverClientID=" + receiverClientID +
-                ", amount=" + amount +
-                ", transactionTime=" + transactionTime +
-                '}';
-    }
-}
-*/

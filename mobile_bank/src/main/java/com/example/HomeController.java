@@ -7,16 +7,21 @@ import java.util.ResourceBundle;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 
 public class HomeController {
 
@@ -99,6 +104,38 @@ public class HomeController {
     private Label username;
 
     @FXML
+    private Button changePass_button;
+
+    @FXML
+    private TextField changePass_current;
+
+    @FXML
+    private TextField changePass_new;
+
+    @FXML
+    private AnchorPane change_password_form;
+
+    @FXML
+    private Button sign_out_btn;
+
+    @FXML
+    void switchToLoginScreen(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(scene);
+            stage.show();
+            
+            // Установка значения currentUserId в "None"
+            UserSession.getInstance().setUserId(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     void initialize() {
         assert AddProducts_amount != null : "fx:id=\"AddProducts_amount\" was not injected: check your FXML file 'home.fxml'.";
         assert AddProducts_cardChoose != null : "fx:id=\"AddProducts_cardChoose\" was not injected: check your FXML file 'home.fxml'.";
@@ -123,6 +160,11 @@ public class HomeController {
         assert payment_form != null : "fx:id=\"payment_form\" was not injected: check your FXML file 'home.fxml'.";
         assert settings_btn != null : "fx:id=\"settings_btn\" was not injected: check your FXML file 'home.fxml'.";
         assert username != null : "fx:id=\"username\" was not injected: check your FXML file 'home.fxml'.";
+        assert changePass_button != null : "fx:id=\"changePass_button\" was not injected: check your FXML file 'home.fxml'.";
+        assert changePass_current != null : "fx:id=\"changePass_current\" was not injected: check your FXML file 'home.fxml'.";
+        assert changePass_new != null : "fx:id=\"changePass_new\" was not injected: check your FXML file 'home.fxml'.";
+        assert change_password_form != null : "fx:id=\"change_password_form\" was not injected: check your FXML file 'home.fxml'.";
+        assert sign_out_btn != null : "fx:id=\"sign_out_btn\" was not injected: check your FXML file 'home.fxml'.";
 
         int currentUserId = UserSession.getInstance().getUserId();
         int cardNumber = DatabaseManager.getAccountNumberByClientId(currentUserId);
@@ -139,17 +181,53 @@ public class HomeController {
 
         payment_btn.setOnAction(event -> {
             mainForm.setVisible(false);
+            change_password_form.setVisible(false);
             payment_form.setVisible(true);
+        });
+
+        settings_btn.setOnAction(event -> {
+            mainForm.setVisible(false);
+            payment_form.setVisible(false);
+            change_password_form.setVisible(true);
         });
 
         home_btn.setOnAction(event -> {
             mainForm.setVisible(true);
+            change_password_form.setVisible(false);
             payment_form.setVisible(false);
             double card_balance_now = DatabaseManager.getBalance(cardNumber);
             String card_balance_now_text = String.format("%.2f", card_balance_now);
             balance.setText(card_balance_now_text);
         });
 
+        sign_out_btn.setOnAction(this::switchToLoginScreen);
+        
+        AddProducts_sendBtn.setOnAction(event -> {
+            try {
+                String amount_text = AddProducts_amount.getText();
+                double amount = Double.parseDouble(amount_text);
+        
+                if (!AddProducts_userCard.getText().isEmpty()) {
+                    String receiver_cardNumber_text = AddProducts_userCard.getText().substring(8);
+                    int receiver_cardNumber = Integer.parseInt(receiver_cardNumber_text);
+                    DatabaseManager.transAction(cardNumber, receiver_cardNumber, amount);
+                } else if (!AddProducts_userCard1.getText().isEmpty()) {
+                    String receiver_phoneNumber_text = AddProducts_userCard1.getText();
+                    DatabaseManager.phonetransAction(cardNumber, receiver_phoneNumber_text, amount);
+                } else {
+                    System.out.println("No receiver information provided");
+                    ErrorLogger.logError("No receiver information provided");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid format");
+                ErrorLogger.logError("Invalid format: " + e);
+            } catch (Exception e) {
+                System.out.println("An error occurred: " + e.getMessage());
+                ErrorLogger.logError("An error occurred: " + e);
+            }
+        });
+        
+        /*
         AddProducts_sendBtn.setOnAction(event -> {
             try {
                 String receiver_cardNumber_text = AddProducts_userCard.getText().substring(8);
@@ -164,7 +242,21 @@ public class HomeController {
                 ErrorLogger.logError("Invalid format " + e);
             }
         });
-
+        */
+        
+        changePass_button.setOnAction(event -> {
+            try {
+                String currentPassText = changePass_current.getText();
+                String newPassText = changePass_new.getText();
+                
+                // Вызов метода updateClientPincode
+                DatabaseManager.updateClientPincode(currentUserId, currentPassText, newPassText);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid format for pincode");
+                ErrorLogger.logError("Invalid format for pincode: " + e);
+            }
+        });
+        
         username.setText(DatabaseManager.getClientName(currentUserId));
 
         String card_number_text = String.valueOf(cardNumber);
@@ -182,15 +274,15 @@ public class HomeController {
 
 
             // Загрузка данных в таблицу
-            loadTransactions();
+            loadTransactions(currentUserId);
         });
 
         
 
     }
 
-    private void loadTransactions() {
-    ObservableList<Transaction> transactions = FXCollections.observableArrayList(DatabaseManager.getTransactions());
+    private void loadTransactions(int currentUserId) {
+    ObservableList<Transaction> transactions = FXCollections.observableArrayList(DatabaseManager.getTransactions(currentUserId));
     AddProducts_tableView.setItems(transactions);
 }
 
