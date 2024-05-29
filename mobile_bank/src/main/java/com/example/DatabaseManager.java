@@ -1,8 +1,13 @@
+// Task 1 account number с типом int не может принять целиком текущий формат номеров счетов типа 4169 5853 5823 2345
 package com.example;
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import java.time.ZoneId;
 
 // Класс для управления базой данных
 public class DatabaseManager {
@@ -76,6 +81,23 @@ public class DatabaseManager {
 
     // Метод для получения баланса счета из базы данных
     public static double getBalance(int accountNumber) {
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT balance FROM accounts WHERE account_number = ?")) {
+            preparedStatement.setInt(1, accountNumber);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getDouble("balance");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting balance: " + e.getMessage());
+            ErrorLogger.logError("Error getting balance: " + e.getMessage());
+        }
+        ErrorLogger.logError("Account not found: " + accountNumber);
+        return 0.0;
+    }
+    /*
+    public static double getBalance(int accountNumber) {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT balance FROM accounts WHERE account_number = ?")) { // Подготовка SQL запроса с парамтром
             preparedStatement.setInt(1, accountNumber); // Установка значения параметра (номер счета)
@@ -90,6 +112,7 @@ public class DatabaseManager {
         ErrorLogger.logError("Account not found:");
         return 0.0; // Возвращаем 0, если счет не найден или произошла ошибка
     }
+    */
 
     public static String getClientName(int client_id) {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой даннхы
@@ -130,6 +153,18 @@ public class DatabaseManager {
     }
     
     // Метод для обновления баланса счета в базе данных
+    private static void updateBalance(int accountNumber, double amountToAdd, Connection connection) throws SQLException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("UPDATE accounts SET balance = balance + ? WHERE account_number = ?")) {
+            preparedStatement.setDouble(1, amountToAdd);
+            preparedStatement.setInt(2, accountNumber);
+            int affectedRows = preparedStatement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Updating balance failed, no rows affected.");
+            }
+        }
+    }
+
+    /*
     public static void updateBalance(int accountNumber, double amountToAdd) {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
         PreparedStatement preparedStatement = connection.prepareStatement("UPDATE accounts SET balance = balance + ? WHERE account_number = ?")) { // Подготовка SQL запроса с параметрами
@@ -141,6 +176,7 @@ public class DatabaseManager {
             ErrorLogger.logError("Error updating balance: " + e.getMessage());
         }
     }
+    */
 
     public static int getAccountNumberByClientPhone(String clientPhone) {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
@@ -156,6 +192,22 @@ public class DatabaseManager {
         } catch (SQLException e) { // Обработка исключений, связанных с работой с базой данных
             System.err.println("Error getting account number by client phone: " + e.getMessage()); // Вывод сообщения об ошибке
             ErrorLogger.logError("Error getting account number by client phone: " + e.getMessage());
+        }
+        ErrorLogger.logError("Account not found");
+        return 0; // Возвращаем 0, если счет не найден или произошла ошибка
+    }
+
+    public static int getAccountNumberByClientId(int client_id) {
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT account_number FROM accounts WHERE client_id = ?")) { // Подготовка SQL запроса с параметрами
+            preparedStatement.setInt(1, client_id); // Установка значения параметра (номер телефона клиента)
+            ResultSet resultSet = preparedStatement.executeQuery(); // Выполнение SQL запроса на получение результата
+            if (resultSet.next()) { // Проверка наличия результата
+                return resultSet.getInt("account_number"); // Возвращение номера счета из результата запроса
+            }
+        } catch (SQLException e) { // Обработка исключений, связанных с работой с базой данных
+            System.err.println("Error getting account number by client_id: " + e.getMessage()); // Вывод сообщения об ошибке
+            ErrorLogger.logError("Error getting account number by client_id: " + e.getMessage());
         }
         ErrorLogger.logError("Account not found");
         return 0; // Возвращаем 0, если счет не найден или произошла ошибка
@@ -227,8 +279,40 @@ public class DatabaseManager {
         
         int sender_client_id = get_client_id_by_account_number(sender_accountNumber);
         int receiver_client_id = get_client_id_by_account_number(receiver_accountNubmer);
+
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL)) {
+            // Begin transaction
+            connection.setAutoCommit(false);
+    
+            // Insert transaction record
+            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?)")) {
+                preparedStatement.setInt(1, sender_accountNumber);
+                preparedStatement.setInt(2, receiver_accountNubmer);
+                preparedStatement.setInt(3, sender_client_id);
+                preparedStatement.setInt(4, receiver_client_id);
+                preparedStatement.setDouble(5, transaction_amount);
+                LocalDateTime curDateTime = LocalDateTime.now();
+                Timestamp timestamp = Timestamp.valueOf(curDateTime);
+                preparedStatement.setTimestamp(6, timestamp);
+                preparedStatement.executeUpdate();
+            }
+    
+            // Update sender balance
+            double sender_amountToAdd = transaction_amount * (-1);
+            updateBalance(sender_accountNumber, sender_amountToAdd, connection);
+    
+            // Update receiver balance
+            double receiver_amountToAdd = transaction_amount;
+            updateBalance(receiver_accountNubmer, receiver_amountToAdd, connection);
+    
+            // Commit transaction
+            connection.commit();
+        } catch (SQLException e) {
+            System.err.println("Error during transaction: " + e.getMessage());
+            ErrorLogger.logError("Error during transaction: " + e.getMessage());
+        }
         
-        //
+        /*
         try (Connection connection = DriverManager.getConnection(DATABASE_URL); // Установка соединения с базой данных
         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?)")) { // Подготовка SQL запроса с параметрами
             preparedStatement.setInt(1, sender_accountNumber); // Установка значения первого параметра (номер счета отправителя)
@@ -238,6 +322,7 @@ public class DatabaseManager {
             preparedStatement.setDouble(5, transaction_amount); // Установка значения пятого параметра (сумма транзакции)
             LocalDateTime curDateTime = LocalDateTime.now();
             preparedStatement.setObject(6, curDateTime); // Установка значения шестого параметра (время транзакции)
+            preparedStatement.executeUpdate(); // Выполнение SQL запроса на обновление записи
         } catch (SQLException e) { // Обработка исключений, связанных с базой данных
             System.err.println("Error during transaction: " + e.getMessage()); // Вывод сообщения об ошибке
             ErrorLogger.logError("Error during transaction: " + e.getMessage()); 
@@ -246,6 +331,7 @@ public class DatabaseManager {
         double receiver_amountToAdd = transaction_amount;
         updateBalance(sender_accountNumber, sender_amountToAdd);
         updateBalance(receiver_accountNubmer, receiver_amountToAdd);
+        */
     }
     
     public static void phonetransAction (int sender_account_number, String receiver_client_phone, double transaction_amount) {
@@ -258,6 +344,73 @@ public class DatabaseManager {
         transAction(sender_account_number, receiver_account_number, transaction_amount);
     }
 
+    public static ObservableList<Transaction> getTransactions() {
+        ObservableList<Transaction> transactionsList = FXCollections.observableArrayList();
+    
+        String query = "SELECT sender_account_number, receiver_account_number, sender_client_id, " +
+                       "receiver_client_id, amount, transaction_time FROM transactions";
+    
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
+    
+            while (resultSet.next()) {
+                String userCard = String.valueOf(resultSet.getInt("sender_account_number"));
+                String userName = String.valueOf(resultSet.getInt("sender_client_id"));
+                double amount = resultSet.getDouble("amount");
+                Timestamp timestamp = resultSet.getTimestamp("transaction_time");
+    
+                if (timestamp != null) {
+                    LocalDateTime dateTime = timestamp.toLocalDateTime();
+                    LocalDate date = dateTime.toLocalDate();
+                    Transaction transaction = new Transaction(userCard, userName, amount, date);
+                    transactionsList.add(transaction);
+                } else {
+                    System.err.println("Error: transaction_time is null for one of the transactions");
+                    ErrorLogger.logError("Error: transaction_time is null for one of the transactions");
+                }
+            }
+    
+        } catch (SQLException e) {
+            System.err.println("Error fetching transactions: " + e.getMessage());
+            ErrorLogger.logError("Error fetching transactions: " + e.getMessage());
+        }
+    
+        return transactionsList;
+    }
+    
+    /*
+    public static ObservableList<Transaction> getTransactions() {
+        ObservableList<Transaction> transactionsList = FXCollections.observableArrayList();
+
+        String query = "SELECT sender_account_number, receiver_account_number, sender_client_id, " +
+                       "receiver_client_id, amount, transaction_time FROM transactions";
+
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
+
+            while (resultSet.next()) {
+                String userCard = String.valueOf(resultSet.getInt("sender_account_number"));
+                String userName = String.valueOf(resultSet.getInt("sender_client_id"));
+                double amount = resultSet.getDouble("amount");
+                LocalDate date = resultSet.getTimestamp("transaction_time").toLocalDateTime().toLocalDate();
+
+                Transaction transaction = new Transaction(userCard, userName, amount, date);
+                transactionsList.add(transaction);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching transactions: " + e.getMessage());
+            ErrorLogger.logError("Error fetching transactions: " + e.getMessage());
+        }
+
+        return transactionsList;
+    }
+    */
+}
+
+/*
 public static List<Transaction> getTransactionHistory(int clientID) {
     List<Transaction> transactions = new ArrayList<>();
 
@@ -289,7 +442,9 @@ public static List<Transaction> getTransactionHistory(int clientID) {
 
     return transactions;
 }
+*/
 
+/*
 // Класс Transaction для хранения данных о транзакциях
 public static class Transaction {
     private int senderAccountNumber;
@@ -345,4 +500,4 @@ public static class Transaction {
                 '}';
     }
 }
-}
+*/

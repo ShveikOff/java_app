@@ -1,0 +1,8 @@
+2024-05-21 17:14:51 - Invalid user ID format: 
+2024-05-21 17:15:00 - Invalid user ID format: 
+2024-05-21 18:00:14 - client_name not found
+2024-05-21 18:02:35 - client_name not found
+2024-05-23 15:28:53 - not enough money on balance
+2024-05-23 16:38:45 - Error during transaction: [SQLITE_ERROR] SQL error or missing database (table transactions has no column named sender_account)
+2024-05-23 18:25:44 - Error fetching transactions: Error parsing time stamp
+2024-05-23 18:31:16 - Error fetching transactions: Error parsing time stamp

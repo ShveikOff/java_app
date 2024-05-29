@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.AreaChart?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.HomeController">
+   <children>
+      <AnchorPane prefHeight="200.0" prefWidth="200.0">
+         <children>
+            <BorderPane layoutX="211.0" layoutY="138.0" prefHeight="600.0" prefWidth="1100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <top>
+                  <AnchorPane prefHeight="41.0" prefWidth="1100.0" styleClass="semi-top-form" stylesheets="@dashboardDesign.css" BorderPane.alignment="CENTER">
+                     <children>
+                        <AnchorPane layoutX="24.0" layoutY="-86.0" prefHeight="35.0" prefWidth="1100.0" styleClass="top-form" stylesheets="@dashboardDesign.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <Label layoutX="47.0" layoutY="14.0" text="Banking System">
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                     </children>
+                  </AnchorPane>
+               </top>
+               <left>
+                  <AnchorPane prefHeight="555.0" prefWidth="197.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <AnchorPane layoutX="-33.0" layoutY="59.0" prefHeight="554.6666666666666" prefWidth="197.33333333333334" styleClass="nav-form" stylesheets="@dashboardDesign.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <Label layoutX="61.0" layoutY="118.0" text="Welcome," textFill="WHITE">
+                                 <font>
+                                    <Font size="17.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="username" layoutX="12.0" layoutY="144.0" textFill="WHITE">
+                                 <font>
+                                    <Font name="Arial Bold" size="14.0" />
+                                 </font>
+                              </Label>
+                              <Line endX="64.83332824707031" layoutX="116.0" layoutY="180.0" startX="-100.0" stroke="WHITE" />
+                              <Button fx:id="history_btn" layoutX="9.0" layoutY="303.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="180.0" styleClass="nav-btn" stylesheets="@dashboardDesign.css" text="History" />
+                              <Button fx:id="payment_btn" layoutX="8.0" layoutY="261.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="180.0" styleClass="nav-btn" stylesheets="@dashboardDesign.css" text="Payments" />
+                              <Button fx:id="home_btn" layoutX="9.0" layoutY="224.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="180.0" styleClass="nav-btn" stylesheets="@dashboardDesign.css" text="Home" AnchorPane.bottomAnchor="297.99999999999994" />
+                              <Button fx:id="settings_btn" layoutX="10.0" layoutY="445.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="180.0" styleClass="nav-btn" stylesheets="@dashboardDesign.css" text="Settings" />
+                              <Button layoutX="16.0" layoutY="513.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="42.0" stylesheets="@dashboardDesign.css">
+                                 <font>
+                                    <Font size="11.0" />
+                                 </font>
+                                 <styleClass>
+                                    <String fx:value="logout" />
+                                    <String fx:value="shadow" />
+                                 </styleClass>
+                              </Button>
+                              <Label layoutX="61.0" layoutY="520.0" text="Sign Out" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma" size="14.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                     </children>
+                  </AnchorPane>
+               </left>
+               <center>
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <AnchorPane fx:id="mainForm" layoutX="77.0" layoutY="89.0" prefHeight="558.6666666666666" prefWidth="902.6666666666666" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <AnchorPane layoutX="14.0" layoutY="14.0" prefHeight="149.0" prefWidth="877.0" stylesheets="@dashboardDesign.css">
+                                 <styleClass>
+                                    <String fx:value="white-bg" />
+                                    <String fx:value="shadow" />
+                                 </styleClass>
+                                 <children>
+                                    <AnchorPane layoutX="14.0" layoutY="15.0" prefHeight="119.0" prefWidth="277.0" stylesheets="@dashboardDesign.css">
+                                       <styleClass>
+                                          <String fx:value="nav-form" />
+                                          <String fx:value="card" />
+                                       </styleClass>
+                                       <children>
+                                          <Label layoutX="21.0" layoutY="14.0" text="Card Number" textFill="WHITE">
+                                             <font>
+                                                <Font size="15.0" />
+                                             </font>
+                                          </Label>
+                                          <Label fx:id="card_number" alignment="CENTER_RIGHT" layoutX="29.0" layoutY="45.0" prefHeight="30.0" prefWidth="223.0" textFill="WHITE">
+                                             <font>
+                                                <Font name="Berlin Sans FB" size="20.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane layoutX="307.0" layoutY="15.0" prefHeight="119.0" prefWidth="281.0" stylesheets="@dashboardDesign.css">
+                                       <styleClass>
+                                          <String fx:value="nav-form" />
+                                          <String fx:value="card" />
+                                       </styleClass>
+                                       <children>
+                                          <Label layoutX="111.0" layoutY="89.0" text="Balance" textFill="WHITE">
+                                             <font>
+                                                <Font size="15.0" />
+                                             </font>
+                                          </Label>
+                                          <Label fx:id="balance" alignment="CENTER_RIGHT" layoutX="56.0" layoutY="20.0" prefHeight="22.0" prefWidth="201.0" textFill="WHITE">
+                                             <font>
+                                                <Font name="Berlin Sans FB" size="20.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane layoutX="601.0" layoutY="15.0" prefHeight="119.0" prefWidth="263.0" stylesheets="@dashboardDesign.css">
+                                       <styleClass>
+                                          <String fx:value="nav-form" />
+                                          <String fx:value="card" />
+                                       </styleClass>
+                                       <children>
+                                          <Label layoutX="102.0" layoutY="84.0" text="Total Outcome" textFill="WHITE">
+                                             <font>
+                                                <Font name="Tahoma" size="15.0" />
+                                             </font>
+                                          </Label>
+                                          <Label alignment="CENTER_RIGHT" layoutX="50.0" layoutY="15.0" prefHeight="22.0" prefWidth="201.0" text="\$0.0" textFill="WHITE">
+                                             <font>
+                                                <Font name="Berlin Sans FB" size="20.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </AnchorPane>
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane layoutX="12.0" layoutY="198.0" prefHeight="350.0" prefWidth="877.0" stylesheets="@dashboardDesign.css">
+                                 <styleClass>
+                                    <String fx:value="white-bg" />
+                                    <String fx:value="shadow" />
+                                 </styleClass>
+                                 <children>
+                                    <AnchorPane layoutX="14.0" layoutY="14.0" prefHeight="323.0" prefWidth="489.0" stylesheets="@dashboardDesign.css">
+                                       <styleClass>
+                                          <String fx:value="white-bg" />
+                                          <String fx:value="shadow" />
+                                       </styleClass>
+                                       <children>
+                                          <AreaChart layoutY="-107.0" prefHeight="323.3333333333333" prefWidth="500.0" title="Income Data Chart" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <xAxis>
+                                              <CategoryAxis side="BOTTOM" />
+                                            </xAxis>
+                                            <yAxis>
+                                              <NumberAxis side="LEFT" />
+                                            </yAxis>
+                                          </AreaChart>
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane layoutX="527.0" layoutY="14.0" prefHeight="323.0" prefWidth="335.0" stylesheets="@dashboardDesign.css">
+                                       <styleClass>
+                                          <String fx:value="white-bg" />
+                                          <String fx:value="shadow" />
+                                       </styleClass>
+                                       <children>
+                                          <BarChart layoutX="-78.0" layoutY="-47.0" prefHeight="353.3333333333333" prefWidth="422.0" title="Outcome Data Chart" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <xAxis>
+                                              <CategoryAxis side="BOTTOM" />
+                                            </xAxis>
+                                            <yAxis>
+                                              <NumberAxis side="LEFT" />
+                                            </yAxis>
+                                          </BarChart>
+                                       </children>
+                                    </AnchorPane>
+                                 </children>
+                              </AnchorPane>
+                              <Line endX="777.0000610351562" layoutX="113.0" layoutY="180.0" startX="-100.0" stroke="#175926" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane fx:id="payment_form" layoutX="155.0" layoutY="79.0" prefHeight="558.6666666666666" prefWidth="902.6666666666666" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <AnchorPane layoutX="14.0" layoutY="14.0" prefHeight="533.0" prefWidth="294.0" stylesheets="@dashboardDesign.css">
+                                 <styleClass>
+                                    <String fx:value="white-bg" />
+                                    <String fx:value="shadow" />
+                                 </styleClass>
+                                 <children>
+                                    <AnchorPane layoutX="79.0" layoutY="20.0" prefHeight="151.0" prefWidth="117.0" stylesheets="@dashboardDesign.css">
+                                       <styleClass>
+                                          <String fx:value="white-bg" />
+                                          <String fx:value="shadow" />
+                                       </styleClass>
+                                       <children>
+                                          <ImageView fx:id="AddProducts_imageView" fitHeight="151.0" fitWidth="117.0" layoutY="2.0" pickOnBounds="true" preserveRatio="true">
+                                             
+                                          </ImageView>
+                                          <Button fx:id="AddProducts_importBtn" layoutX="-1.0" layoutY="127.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="117.0" text="Import" />
+                                       </children>
+                                    </AnchorPane>
+                                    <Label layoutX="35.0" layoutY="285.0" text="Card Number:">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="AddProducts_userCard" layoutX="129.0" layoutY="283.0" prefHeight="25.0" prefWidth="145.0">
+                                       <opaqueInsets>
+                                          <Insets />
+                                       </opaqueInsets></TextField>
+                                    <Label layoutX="77.0" layoutY="377.0" text="Card:">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <ComboBox fx:id="AddProducts_cardChoose" layoutX="126.0" layoutY="374.0" prefWidth="150.0" promptText="Choose" />
+                                    <Label layoutX="17.0" layoutY="329.0" text="Enter the amount:">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="AddProducts_amount" layoutX="131.0" layoutY="326.0" prefHeight="25.0" prefWidth="145.0" />
+                                    <Button fx:id="AddProducts_sendBtn" layoutX="74.0" layoutY="444.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="128.0" text="Send" />
+                                    <Label layoutX="51.0" layoutY="205.0" text="User Name:">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="AddProducts_userName" layoutX="130.0" layoutY="202.0" prefHeight="25.0" prefWidth="145.0" />
+                                    <Label layoutX="30.0" layoutY="244.0" text="PhoneNumber:">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="AddProducts_userCard1" layoutX="131.0" layoutY="241.0" prefHeight="25.0" prefWidth="145.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane layoutX="331.0" layoutY="14.0" prefHeight="533.0" prefWidth="561.0" stylesheets="@dashboardDesign.css">
+                                 <styleClass>
+                                    <String fx:value="white-bg" />
+                                    <String fx:value="shadow" />
+                                 </styleClass>
+                                 <children>
+                                    <TableView fx:id="AddProducts_tableView" layoutX="24.0" layoutY="84.0" prefHeight="431.0" prefWidth="518.0">
+                                      <columns>
+                                        <TableColumn fx:id="AddProducts_col_userName" prefWidth="117.99993896484375" text="User Name" />
+                                        <TableColumn fx:id="AddProducts_col_userCard" prefWidth="156.00003051757812" text="Card Number" />
+                                          <TableColumn fx:id="AddProducts_col_amount" prefWidth="133.33331298828125" text="Amount" />
+                                          <TableColumn fx:id="AddProducts_col_date" minWidth="0.0" prefWidth="109.3333740234375" text="Date" />
+                                      </columns>
+                                    </TableView>
+                                    <TextField fx:id="AddProducts_search" layoutX="24.0" layoutY="31.0" prefHeight="30.0" prefWidth="253.0" promptText="Search:" />
+                                    <Button fx:id="History_getBtn" layoutX="363.0" layoutY="24.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="128.0" text=" Get History" />
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                        </AnchorPane>
+                     </children>
+                  </AnchorPane>
+               </center>
+            </BorderPane>
+         </children>
+      </AnchorPane>
+   </children>
+</StackPane>

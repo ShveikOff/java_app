@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
+
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="439.0" prefWidth="623.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.LoginController">
+   <children>
+      <AnchorPane fx:id="main_form" prefHeight="200.0" prefWidth="200.0" stylesheets="@LoginDesign.css">
+         <children>
+            <AnchorPane layoutX="2.0" prefHeight="439.0" prefWidth="315.0" stylesheets="@LoginDesign.css" AnchorPane.rightAnchor="0.0" />
+            <AnchorPane layoutX="317.0" prefHeight="439.0" prefWidth="309.0" styleClass="right-form" stylesheets="@LoginDesign.css" AnchorPane.rightAnchor="0.0">
+               <children>
+                  <Label layoutX="69.0" layoutY="103.0" text="Welcome Back Admin!">
+                     <font>
+                        <Font name="Tahoma Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="username" layoutX="48.0" layoutY="179.0" onAction="#loginAdmin" prefHeight="30.0" prefWidth="220.0" promptText="Username" styleClass="textField" stylesheets="@LoginDesign.css" />
+                  <PasswordField fx:id="password" layoutX="48.0" layoutY="220.0" onAction="#loginAdmin" prefHeight="30.0" prefWidth="220.0" promptText="Password" styleClass="textField" stylesheets="@LoginDesign.css" />
+                  <Button fx:id="loginBtn" layoutX="48.0" layoutY="268.0" mnemonicParsing="false" onAction="#loginAdmin" prefHeight="38.0" prefWidth="220.0" styleClass="login-btn" stylesheets="@LoginDesign.css" text="Login" />
+               </children>
+            </AnchorPane>
+            <SplitPane prefHeight="439.0" prefWidth="315.0" styleClass="left-form" stylesheets="@LoginDesign.css">
+               <items>
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <Label layoutX="69.0" layoutY="193.0" text="Banking System" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="23.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </AnchorPane>
+               </items>
+            </SplitPane>
+         </children>
+      </AnchorPane>
+   </children>
+</StackPane>
